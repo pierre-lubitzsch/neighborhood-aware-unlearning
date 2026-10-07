@@ -1,0 +1,31 @@
+# @package _global_
+
+# Top-level Hydra config for `python -m src.unlearn_sequential`.
+
+defaults:
+  - _self_
+  - data_loading: null
+  - model: null
+  - callbacks: default
+  - logger: csv
+  - trainer: default
+  - paths: default
+  - extras: default
+  - hydra: default
+  - loss: null
+  - optim: null
+  - eval: null
+  - experiment: null
+
+task_name: "unlearn"
+id: ${now:%Y-%m-%d}/${now:%H-%M-%S}
+tags: ["unlearn"]
+
+# pre-trained checkpoint to unlearn from
+ckpt_path: ???
+
+# Global RNG seed (PyTorch / NumPy / Python / retain subset shuffle).
+seed: 2
+
+# Optional run label for logging (also set via UNLEARN_RUN_TAG).
+unlearning_run_tag: null

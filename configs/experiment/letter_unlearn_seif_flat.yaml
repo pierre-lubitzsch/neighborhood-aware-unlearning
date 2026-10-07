@@ -1,0 +1,14 @@
+# @package _global_
+# LETTER variant of tiger_unlearn_seif_flat.yaml (differs in model target and generation-loss temperature).
+
+# Seif: Gaussian-noise erase followed by a repair fine-tune.
+
+defaults:
+  - letter_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  algorithm: seif
+
+tags:
+  - amazon-p5-gr-unlearn-seif

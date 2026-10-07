@@ -1,0 +1,12 @@
+# @package _global_
+# LETTER variant of tiger_unlearn_filter_flat.yaml (differs in model target and generation-loss temperature).
+
+defaults:
+  - letter_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  algorithm: filter
+
+tags:
+  - amazon-p5-gr-unlearn-filter

@@ -1,0 +1,204 @@
+# Shared unlearning defaults, included by experiment configs via the defaults list.
+
+unlearning:
+  algorithm: scif  # scif | seif | kookmin | fanchuan | unified | finetune | neg_train | filter | retrain
+  deletion_spec: session  # session | item | item_pairs
+  # item_pairs: unlearn only the (prefix, target_item) pairs from spam sessions.
+  # unlearn_whole_items: also unlearn those pairs from retain sessions.
+  unlearn_whole_items: false
+  # item_pairs only: also emit rows where a target item appears in the input history.
+  include_context_rows: false
+  forget_size: null
+
+  # Retain / repair budget = retain_sample_size (or repair_sample_bound) * |D_f|
+  retain_samples_used_for_update: 16
+  retain_sample_size: null
+  repair_sample_bound: null  # alias; defaults to retain_samples_used_for_update
+  retain_max_rows: null
+
+  # Neighborhood construction
+  neighborhood_aware: false
+  neighborhood_method: prefix  # prefix | embedding
+  neighborhood_aware_sample_rate: 1.0
+  neighbor_aware_factor: 8.0
+  sid_prefix_length: 2
+  progressive_sid_prefix: true
+  embedding_path: null
+  embedding_epsilon: null
+  embedding_max_neighbors: 100
+
+  # Sequential chunking: set one of these (n_unlearning_chunks takes priority)
+  # request_batch_size: fixed users per chunk; n_unlearning_chunks: fixed number of chunks
+  n_unlearning_chunks: null
+
+  # SCIF numerics
+  damping: 0.01
+  cg_max_iter: 200
+  cg_tol: 1.0e-5
+  cg_solution_max_norm: null
+  max_norm: null
+  update_max_norm: 1.0
+  batch_size_per_device: 256
+  # Forget-set coverage: if true, the forget loader uses every prefix row, split into
+  # batches of forget_rows_per_batch, instead of sampling max_batch_size rows.
+  forget_full_coverage: false
+  forget_rows_per_batch: 512
+  target_params: tiger
+  eval_mode: true
+  rows_per_shard: 4096
+
+  # Restrict the SCIF update to selected semantic-ID code positions: null or "all"
+  # (no restriction), a list of 0-based ints (e.g. [0,1]), or 1-based names (e.g. [c1,c2]).
+  # Only the selected decoder heads and SID embedding rows move unless
+  # update_positions_backbone=true.
+  update_positions: null
+  # Rows of the selected code levels updated by algorithm=unified:
+  #   all                  every row
+  #   forget               only the codes of forget items
+  #   forget_neighborhood  forget items plus their neighbors
+  code_row_scope: all
+  # Restrict the SID embedding row mask to these levels (same syntax as update_positions).
+  # Unlike update_positions, the backbone and decoder heads still move.
+  code_row_levels: null
+  # Freeze the entire semantic-ID embedding table during the update.
+  freeze_sid_table: false
+  update_positions_backbone: false
+
+  # RQ-ID diagnostics (TigerUnlearningModule.diagnose_rq_ids): both | positions | code_sharing.
+  diagnostics_mode: both
+  # Collateral-drift measurement options.
+  # drift_neighbor_mode: prefix (shared code prefix) or embedding (k nearest by cosine).
+  drift_neighbor_mode: prefix
+  drift_neighbor_k: 32
+  drift_unlearned_ckpt: null
+  drift_n_queries: 8          # retain query batches to score over
+  drift_control_items: 600    # sampled non-sharing items, the comparison group
+  drift_item_chunk: 64
+  drift_n_boot: 2000          # bootstrap resamples for the mass-delta interval
+  # Per-item position profile options
+  profile_max_items: 2000
+
+  # Optimizer for first-order unlearning algorithms: adam | adamw | sgd.
+  # Per-algorithm keys (<algo>_optimizer) take precedence when set.
+  optimizer: adam
+
+  # Per-algorithm optimizer overrides (null falls back to `optimizer`).
+  seif_optimizer: null
+  kookmin_optimizer: null
+  fanchuan_optimizer: null
+  neg_train_optimizer: null
+  finetune_optimizer: null
+  unified_optimizer: null
+  # Minimum fraction of stored codes that TRACER must reproduce at phi=0 (1.0: exact).
+  tracer_sid_tolerance: 1.0
+  tracer_optimizer: null
+
+  # Fine-tune baseline
+  finetune_steps: 500
+  finetune_lr: 0.001
+
+  # Negative training baseline
+  neg_train_steps: 200
+  neg_train_lr: 0.001
+  neg_retain_every: 5
+
+  # Filter baseline (decode-time masking, no weight update)
+  filter_mode: global  # global | user_dependent
+
+  # Unified objective
+  # L = lambda_r*L_R + lambda_f*L_F + lambda_s*L_sep + lambda_n*L_n
+  forget_loss_level: token  # token | sequence
+  # Per-position weights on the forget term (null: uniform; requires forget_loss_level=token).
+  forget_position_weights: null
+  # Per-SID-level weights on the item-level loss, applied to retain and forget terms
+  # (null: uniform; requires forget_loss_level=token).
+  position_weights: null
+  lambda_f: 1.0
+  lambda_s: 0.1
+  # Weight of the coherence loss L_n on neighbors of the forget targets (0 disables).
+  lambda_n: 0.0
+  neighborhood_count: 4
+  neighborhood_prefix_length: 2
+  # Coherence rows: target_only (rows whose label is a deletion target) or all.
+  coherence_rows: target_only
+  # Neighbor selection for L_n: prefix (shared SID prefix), embedding (top-k in the
+  # pre-quantization space), latent (top-k in a refined latent space), or embedding+latent.
+  coherence_neighbor_method: prefix
+  coherence_embedding_metric: cosine  # cosine | l2 (embedding method only)
+  # Refined latent tensor [N, d_z] for the latent neighbor methods.
+  coherence_latent_path: null
+  # Neighborhood budget for embedding+latent: full (count per source) or matched
+  # (one count split between sources).
+  coherence_union_size: full
+  # Coherence loss: nll (per-neighbor -log p), mass (-log of neighborhood mass),
+  # or suppress (-log(1 - mass), removes the neighborhood).
+  coherence_loss_type: nll
+  # Mass clamp for coherence_loss_type=suppress.
+  coherence_mass_cap: 0.999
+  # InfoNCE temperature for L_sep (cosine scoring).
+  sep_temperature: 0.07
+  # L_sep negatives: forget_target_only | forget (all forget-set items) | random_retain.
+  sep_negatives: forget_target_only
+  # L_sep positive: history (items in the user's history) or label (the next item).
+  sep_positives: history
+  # L_sep scoring: cosine (pooled encoder vectors) or generative (sequence
+  # log-probability log p(s_i | h_u); the positive is always the label).
+  sep_loss_type: generative
+  # Temperature for sep_loss_type=generative.
+  sep_gen_temperature: 1.0
+  # Number of random negatives when sep_negatives=random_retain (null: match default set size).
+  sep_num_random_negatives: null
+  unified_steps: 500
+  # Number of passes. unified: total steps = n_epochs * min(n_forget_batches, n_retain_batches),
+  # overriding unified_steps; seif: repair epochs. null uses per-algorithm defaults.
+  n_epochs: null
+  # Weight on the retain term. Special cases: lambda_f=lambda_s=lambda_n=0 gives finetune;
+  # lambda_r=0 with lambda_f>0 gives pure gradient ascent.
+  lambda_r: 1.0
+  unified_lr: 1.0e-4
+
+  # Stable/adaptive semantic IDs (algorithm=unified): adaptive_codes restricts the update
+  # to the code positions [stable_codes, num_hierarchies).
+  adaptive_codes: false
+  stable_codes: 2
+  adaptive_update_backbone: false
+  # Train per-item offsets for adaptive positions instead of the shared rows and heads.
+  adaptive_adapter: false
+  # Learning-rate multipliers (algorithm=unified): code_lr_scale for all SID code parameters,
+  # adaptive_code_lr_scale additionally for positions [stable_codes, H).
+  code_lr_scale: 1.0
+  adaptive_code_lr_scale: 1.0
+  # Learning-rate multiplier for the stable code positions [0, stable_codes).
+  stable_code_lr_scale: 1.0
+
+  # Kookmin (gradient-guided reinitialization + scaled retain repair)
+  kookmin_init_rate: 0.01
+  kookmin_neg_grad_sample_size: 128
+  kookmin_retain_epochs: 1
+  kookmin_retain_lr: 0.001
+  kookmin_scale_for_reinit: 10.0
+
+  # Fanchuan (uniform-pseudolabel KL + contrastive forget/retain)
+  fanchuan_lr: 0.001
+  fanchuan_uniform_epochs: 1
+  fanchuan_contrastive_iters: 8
+  fanchuan_contrastive_temperature: 1.15
+  fanchuan_retain_epochs_per_iter: 1
+
+  # Seif (Gaussian-noise erase + repair fine-tune; distinct from scif)
+  seif_erase_std: 0.6
+  seif_erase_std_final: 0.005
+  seif_repair_epochs: 4
+  seif_repair_lr: 0.0007
+  seif_weight_decay: 0.0005
+  # null: target parameters whose name contains "embedding" or "mlp"
+  seif_noise_param_keywords: null
+
+  # Local repair (optional)
+  local_repair:
+    enabled: false
+    logit_suppression: false
+    adapter_repair: false
+    prefix_repair: false
+    mass_regularization: false
+    gamma: 1.0

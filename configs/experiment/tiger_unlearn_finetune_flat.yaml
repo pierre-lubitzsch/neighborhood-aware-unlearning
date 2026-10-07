@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - tiger_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  algorithm: finetune
+
+tags:
+  - amazon-p5-gr-unlearn-finetune

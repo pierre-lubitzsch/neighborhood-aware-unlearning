@@ -1,0 +1,12 @@
+# @package _global_
+# LETTER counterpart of tiger_unlearn_finetune_flat.yaml (LETTER model target and generation-loss temperature).
+
+defaults:
+  - letter_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  algorithm: finetune
+
+tags:
+  - amazon-p5-gr-unlearn-finetune

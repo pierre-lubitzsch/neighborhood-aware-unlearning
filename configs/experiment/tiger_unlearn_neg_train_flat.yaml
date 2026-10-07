@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - tiger_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  algorithm: neg_train
+
+tags:
+  - amazon-p5-gr-unlearn-neg-train

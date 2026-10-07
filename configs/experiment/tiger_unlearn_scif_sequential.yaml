@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - tiger_unlearn_scif_flat
+  - _self_
+
+unlearning:
+  request_batch_size: 8
+  n_unlearning_chunks: null  # alternative to request_batch_size: fix number of chunks, not chunk size
+  max_requests: null
+  request_user_order: manifest
+  request_seed: ${seed}
+  save_intermediate_checkpoints: false
+  # Fractions of the request stream after which a checkpoint is saved.
+  checkpoint_fractions: [1.0]
+  # Drop per-request scratch TFRecords after each SCIF step (eval uses ckpts only).
+  cleanup_request_dirs: true
+  # Post-unlearn evaluation is run by scripts/pipeline/unlearn.sh.
