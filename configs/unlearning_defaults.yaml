@@ -117,13 +117,13 @@ unlearning:
   lambda_s: 0.1
   # Weight of the coherence loss L_n on neighbors of the forget targets (0 disables).
   lambda_n: 0.0
-  neighborhood_count: 4
+  neighborhood_count: 8
   neighborhood_prefix_length: 2
   # Coherence rows: target_only (rows whose label is a deletion target) or all.
   coherence_rows: target_only
   # Neighbor selection for L_n: prefix (shared SID prefix), embedding (top-k in the
   # pre-quantization space), latent (top-k in a refined latent space), or embedding+latent.
-  coherence_neighbor_method: prefix
+  coherence_neighbor_method: embedding
   coherence_embedding_metric: cosine  # cosine | l2 (embedding method only)
   # Refined latent tensor [N, d_z] for the latent neighbor methods.
   coherence_latent_path: null
@@ -132,7 +132,7 @@ unlearning:
   coherence_union_size: full
   # Coherence loss: nll (per-neighbor -log p), mass (-log of neighborhood mass),
   # or suppress (-log(1 - mass), removes the neighborhood).
-  coherence_loss_type: nll
+  coherence_loss_type: mass
   # Mass clamp for coherence_loss_type=suppress.
   coherence_mass_cap: 0.999
   # InfoNCE temperature for L_sep (cosine scoring).

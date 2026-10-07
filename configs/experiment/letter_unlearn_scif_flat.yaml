@@ -146,18 +146,18 @@ unlearning:
   # Weight of the coherence loss L_n, which teacher-forces the forget history on the semantic
   # IDs of each target's nearest catalog neighbors (unified only; 0 disables).
   lambda_n: 0.0
-  neighborhood_count: 4
+  neighborhood_count: 8
   neighborhood_prefix_length: 2
   # Forget rows scored by L_n: target_only (label is a deletion target) | all.
   coherence_rows: target_only
   # Neighborhood P(i_T) for L_n: prefix (shared SID prefix >= neighborhood_prefix_length) |
   # embedding (top-k in the item embedding space; requires embedding_path).
-  coherence_neighbor_method: prefix
+  coherence_neighbor_method: embedding
   # Similarity for embedding neighbors: cosine | l2.
   coherence_embedding_metric: cosine
   # Form of L_n: nll (per-neighbor -log p) | mass (-log of the summed neighborhood probability) |
   # suppress (-log(1 - neighborhood mass), drains the neighborhood).
-  coherence_loss_type: nll
+  coherence_loss_type: mass
 
   # TRACER baseline (arXiv:2606.07688), algorithm=tracer: token reassignment through
   # per-codeword scores phi, L = L_R + l1*L_F + l2*L_Coh + l3*L_reg. Requires the codebook
